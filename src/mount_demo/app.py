@@ -42,6 +42,7 @@ app = FastAPI(
     title="FastAPI Mount Demo",
     description="A prototype of mounting the main FastAPI app under "
                 "SCRIPT_NAME.",
+    openapi_prefix=settings.SCRIPT_NAME,
 )
 
 
