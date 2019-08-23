@@ -1,0 +1,17 @@
+version: "3.7"
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - TAG=${TAG:-3.7-alpine3.10}
+        - CWD=${CWD:-/app}
+    image: "fastapi-mount:${TAG:-3.7-alpine3.10}"
+    volumes:
+      - ".:${CWD:-/app}"
+    ports:
+      - "${API_PORT:-8000}:8000"
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - SCRIPT_NAME=${SCRIPT_NAME}

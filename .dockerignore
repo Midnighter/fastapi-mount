@@ -1,0 +1,3 @@
+*
+!src/
+!gunicorn_config.py
