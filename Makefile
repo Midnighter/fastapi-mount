@@ -16,7 +16,7 @@ build:
 
 ## Start all services in the background.
 start:
-	docker-compose up --force-recreate -d web
+	docker-compose up --force-recreate
 
 ## Stop all services.
 stop:
