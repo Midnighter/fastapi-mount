@@ -89,7 +89,7 @@ We have chosen here to still rely on the environment variable `SCRIPT_NAME` to
 finally configure the `root_path`. By default this string is empty and the
 application will listen at the root. Here, we have set this to be
 `/demo-service`. Together with the [proxy configuration](nginx.conf), you can
-now access let the application say hello at
+now let the application say hello at
 `http://localhost/demo-service/hello`. The benefit here being that we can now
 mount the app on any path of our choosing simply by changing the environment
 variable `SCRIPT_NAME` and the corret URL rewrite in the proxy configuration. It
