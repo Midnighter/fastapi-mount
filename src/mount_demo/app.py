@@ -26,18 +26,6 @@ from starlette.responses import UJSONResponse
 from mount_demo import settings
 
 
-def init_app(application: FastAPI):
-    """Configure the application further."""
-    msg_format = "[%(name)s] [%(levelname)s] %(message)s"
-    if settings.DEBUG:
-        asyncio.get_event_loop().set_debug(True)
-        warnings.simplefilter("always", ResourceWarning)
-        logging.basicConfig(level="DEBUG", format=msg_format)
-        application.debug = True
-    else:
-        logging.basicConfig(level="INFO", format=msg_format)
-
-
 app = FastAPI(
     title="FastAPI Mount Demo",
     description="A prototype of mounting the main FastAPI app under "
@@ -46,14 +34,23 @@ app = FastAPI(
 )
 
 
+@app.on_event('startup')
+async def init():
+    msg_format = "[%(name)s] [%(levelname)s] %(message)s"
+    if settings.DEBUG:
+        asyncio.get_event_loop().set_debug(True)
+        warnings.simplefilter("always", ResourceWarning)
+        logging.basicConfig(level="DEBUG", format=msg_format)
+        app.debug = True
+    else:
+        logging.basicConfig(level="INFO", format=msg_format)
+
+
 @app.get("/hello")
-def say_hello():
+async def say_hello():
     return UJSONResponse({"message": "hello world"})
 
 
 @app.get("/bye")
-def say_bye():
+async def say_bye():
     return UJSONResponse({"message": "goodbye"})
-
-
-init_app(app)
