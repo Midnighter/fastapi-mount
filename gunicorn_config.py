@@ -24,7 +24,7 @@ import os
 environment = os.environ["ENVIRONMENT"]
 
 bind = "0.0.0.0:8000"
-worker_class = "uvicorn.workers.UvicornWorker"
+worker_class = "mount_demo.workers.ConfigurableWorker"
 timeout = 20
 accesslog = "-"
 access_log_format = (
