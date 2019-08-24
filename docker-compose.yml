@@ -15,7 +15,7 @@ services:
       - "${API_PORT:-8000}:8000"
     environment:
       - ENVIRONMENT=${ENVIRONMENT:-development}
-      - SCRIPT_NAME=${SCRIPT_NAME}
+      - SCRIPT_NAME=${SCRIPT_NAME:-/demo-service}
 
   proxy:
     image: nginx:1.17-alpine
