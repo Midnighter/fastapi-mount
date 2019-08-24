@@ -36,7 +36,7 @@ combination with
 In Flask this is internally handled by werkzeug [as shown
 here](https://werkzeug.palletsprojects.com/en/0.15.x/wsgi/?highlight=script_name#werkzeug.wsgi.pop_path_info).
 
-_How do we do this with FastAPI (or Starlette)?_
+## How do we do this with FastAPI (or Starlette)?
 
 1. If you start this service without further actions you can visit the exposed
     routes and documentation at:
@@ -86,7 +86,20 @@ in the reverse proxy and modify our application's source code (we still made it
 configurable) to manually set the `openapi_prefix`. There should be a better
 way.
 
+## Solution
+
+Please take a look at the
+[root-path](https://github.com/Midnighter/fastapi-mount/tree/root-path) branch
+on GitHub and the version of the README there for a proper solution
+implementation.
+
 ## Copyright
 
 * Copyright © 2019, Moritz E. Beber. All rights reserved.
 * Free software licensed under the [Apache Software License 2.0](LICENSE).
+* This README and other documentation are licensed under a [Creative Commons
+  Attribution-ShareAlike 4.0 International
+  License](http://creativecommons.org/licenses/by-sa/4.0/).
+
+  [![Creative Commons Attribution-ShareAlike 4.0 International
+  License](https://i.creativecommons.org/l/by-sa/4.0/88x31.png)](http://creativecommons.org/licenses/by-sa/4.0/)
