@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-"""Provide a custom Uvicorn worker that can be configured."""
+"""Provide a custom uvicorn worker that can be configured."""
 
 
 from starlette.config import Config
@@ -25,14 +25,14 @@ config = Config()
 
 class ConfigurableWorker(UvicornWorker):
     """
-    Define a UvicornWorker that can be configured by modifying a class attribute.
+    Define a UvicornWorker that can be configured by modifying its class attribute.
 
-    All of the command line arguments for uvicorn are potential configuration options
+    All of the command line options for uvicorn are potential configuration options
     (see https://www.uvicorn.org/settings/ for the complete list).
 
     """
 
-    #: dict: Set the transformed names of uvicorn command line arguments as keys.
+    #: dict: Set the equivalent of uvicorn command line options as keys.
     CONFIG_KWARGS = {
         "root_path": config("SCRIPT_NAME", default=""),
         "proxy_headers": True,
