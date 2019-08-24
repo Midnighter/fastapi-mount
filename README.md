@@ -38,55 +38,92 @@ here](https://werkzeug.palletsprojects.com/en/0.15.x/wsgi/?highlight=script_name
 
 _How do we do this with FastAPI (or Starlette)?_
 
-1. If you start this service without further actions you can visit the exposed
-    routes and documentation at:
+## Solution
 
-    * `localhost:8000/hello`
-    * `localhost:8000/bye`
-    * `localhost:8000/docs`
-    * `localhost:8000/redoc`
+The first key to the puzzle is to realize that with Starlette and FastAPI we are
+dealing with an [ASGI](https://asgi.readthedocs.io/) and _not_ a
+[WSGI](https://wsgi.readthedocs.io/) application. The two specifications are
+similar with regard to their special keys but not identical.  [As it turns
+out](https://asgi.readthedocs.io/en/latest/specs/www.html#wsgi-compatibility)
+the corresponding key for `SCRIPT_NAME` is `root_path`.
 
-2. In order to switch it up, we can now use a reverse proxy. One has already
-   been defined for you in the [docker-compose
-   configuration](docker-compose.yml). When you now try to access your service
-   through the proxy at `http://localhost/demo-service/hello` you will see that
-   this fails with a 404.
+Following this realization, we will want to configure the `root_path`. This
+depends a lot on your deployment strategy. For this demo we have chosen
+[gunicorn](https://gunicorn.org/) with [uvicorn](https://www.uvicorn.org/)
+workers.  Uvicorn has [a lot of useful command line
+options](https://www.uvicorn.org/settings/) and we want to [use `--root-path` as
+well as `--proxy-headers`](https://www.uvicorn.org/settings/#http) here.
 
-3. We can rescue the situation by rewriting the URL in the proxy instead. You
-   can try this by instead hitting `http://localhost/demo2-service/hello`. This
-   will give you the correct response but if you now visit
-   `http://localhost/demo2-service/docs` that fails because the app itself is
-   unaware of the rewritten path.
+Since we are only using uvicorn workers within gunicorn, we cannot use command
+line options but rather need to configure the workers directly. This is done via
+a subclass [as explained in this
+issue](https://github.com/encode/uvicorn/issues/266). You can look at the way we
+have chosen to do so for this project in the
+[workers.py](src/mount_demo/workers.py) module (code excerpt below).
 
-4. To try and remedy the situation, you can create a `.env` file with the
-   content:
+```python
+from starlette.config import Config
+from uvicorn.workers import UvicornWorker
 
-    ```
-    SCRIPT_NAME=/demo2-service
-    ```
 
-    This will automatically be used by the docker-compose configuration so just
-    restart the service (`make clean && make start`). Setting `SCRIPT_NAME` to a
-    non-empty string will affect how the application is initialized.
+config = Config()
 
-    ```python
-    app = FastAPI(
-        title="FastAPI Mount Demo",
-        description="A prototype of mounting the main FastAPI app under "
-                    "SCRIPT_NAME.",
-        openapi_prefix=settings.SCRIPT_NAME,
-    )
-    ```
 
-    When you now visit the docs at `http://localhost/demo2-service/docs` it
-    works as expected!
+class ConfigurableWorker(UvicornWorker):
+    """
+    Define a UvicornWorker that can be configured by modifying its class attribute.
 
-This is a working strategy but it is rather tedious. We had to rewrite the URL
-in the reverse proxy and modify our application's source code (we still made it
-configurable) to manually set the `openapi_prefix`. There should be a better
-way.
+    All of the command line options for uvicorn are potential configuration options
+    (see https://www.uvicorn.org/settings/ for the complete list).
+
+    """
+
+    #: dict: Set the equivalent of uvicorn command line options as keys.
+    CONFIG_KWARGS = {
+        "root_path": config("SCRIPT_NAME", default=""),
+        "proxy_headers": True,
+    }
+```
+
+We have chosen here to still rely on the environment variable `SCRIPT_NAME` to
+finally configure the `root_path`. By default this string is empty and the
+application will listen at the root. Here, we have set this to be
+`/demo-service`. Together with the [proxy configuration](nginx.conf), you can
+now access let the application say hello at
+`http://localhost/demo-service/hello`. The benefit here being that we can now
+mount the app on any path of our choosing simply by changing the environment
+variable `SCRIPT_NAME` and the corret URL rewrite in the proxy configuration. It
+also means that we can now expose as many services as we like behind the same
+domain name simply by choosing different paths for them.
+
+But not so fast you say! What about the [OpenAPI](https://www.openapis.org/)
+docs? Well, as it turns out (at least for the moment) we still have to insert a
+prefix for those to work properly (see code below from
+[app.py](src/mount_demo/app.py)). It would make sense for the `root_path` to be
+used automatically, though, so keep your eyes peeled for [the corresponding
+issue](https://github.com/tiangolo/fastapi/issues/461) on FastAPI.
+
+```python
+app = FastAPI(
+    title="FastAPI Mount Demo",
+    description="A prototype of mounting the main FastAPI app under "
+                "SCRIPT_NAME.",
+    openapi_prefix=settings.SCRIPT_NAME,
+)
+```
+
+## Acknowledgements
+
+Thanks to the user @euri10 for the helpful discussions and advice on
+[gitter](https://gitter.im/tiangolo/fastapi).
 
 ## Copyright
 
 * Copyright © 2019, Moritz E. Beber. All rights reserved.
 * Free software licensed under the [Apache Software License 2.0](LICENSE).
+* This README and other documentation are licensed under a [Creative Commons
+  Attribution-ShareAlike 4.0 International
+  License](http://creativecommons.org/licenses/by-sa/4.0/).
+
+  [![Creative Commons Attribution-ShareAlike 4.0 International
+  License](https://i.creativecommons.org/l/by-sa/4.0/88x31.png)](http://creativecommons.org/licenses/by-sa/4.0/)
