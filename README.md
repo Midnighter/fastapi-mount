@@ -89,12 +89,12 @@ We have chosen here to still rely on the environment variable `SCRIPT_NAME` to
 finally configure the `root_path`. By default this string is empty and the
 application will listen at the root. Here, we have set this to be
 `/demo-service`. Together with the [proxy configuration](nginx.conf), you can
-now let the application say hello at
-`http://localhost/demo-service/hello`. The benefit here being that we can now
-mount the app on any path of our choosing simply by changing the environment
-variable `SCRIPT_NAME` and the corret URL rewrite in the proxy configuration. It
-also means that we can now expose as many services as we like behind the same
-domain name simply by choosing different paths for them.
+now let the application say hello at `http://localhost/demo-service/hello`. The
+benefit here being that we can now mount the app on any path of our choosing
+simply by changing the environment variable `SCRIPT_NAME` and the correct URL
+rewrite in the proxy configuration. It also means that we can now expose as many
+services as we like behind the same domain name simply by choosing different
+paths for them.
 
 But not so fast you say! What about the [OpenAPI](https://www.openapis.org/)
 docs? Well, as it turns out (at least for the moment) we still have to insert a
